@@ -3,6 +3,7 @@ package com.unyt.unytbankapp.service.impl;
 import com.unyt.unytbankapp.dto.BankResponse;
 import com.unyt.unytbankapp.dto.UserRequest;
 import com.unyt.unytbankapp.entity.User;
+import com.unyt.unytbankapp.utils.AccountUtils;
 
 public class UserServiceImpl implements UserService {
 
@@ -15,7 +16,7 @@ public class UserServiceImpl implements UserService {
                 .gender(userRequest.getGender())
                 .address(userRequest.getAddress())
                 .stateOfOrigin(userRequest.getStateOfOrigin())
-                .accountNumber()
+                .accountNumber(AccountUtils.generateAccountNumber())
                 .build();
     }
 }
