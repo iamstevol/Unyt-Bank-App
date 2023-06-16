@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Optional;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -13,5 +15,5 @@ public class BankResponse {
 
     private String responseCode;
     private String responseMessage;
-    private AccountInfo accountInfo;
+    private Optional<AccountInfo> accountInfo;
 }

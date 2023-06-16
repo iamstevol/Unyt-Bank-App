@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class UserServiceImpl implements UserService {
             return BankResponse.builder()
                     .responseCode(AccountUtils.ACCOUNT_EXISTS_CODE)
                     .responseMessage(AccountUtils.ACCOUNT_EXISTS_MESSAGE)
-                    .accountInfo(null)
+                    .accountInfo(Optional.empty())
                     .build();
         }
         User newUser = User.builder()
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATION_SUCCESS)
                 .responseMessage(AccountUtils.ACCOUNT_CREATION_MESSAGE)
-                .accountInfo(accountInfoResponse(savedUser))
+                .accountInfo(Optional.ofNullable(accountInfoResponse(savedUser)))
                 .build();
     }
 
