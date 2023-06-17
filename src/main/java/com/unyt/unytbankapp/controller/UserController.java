@@ -1,13 +1,11 @@
 package com.unyt.unytbankapp.controller;
 
 import com.unyt.unytbankapp.dto.BankResponse;
+import com.unyt.unytbankapp.dto.EnquiryRequest;
 import com.unyt.unytbankapp.dto.UserRequest;
 import com.unyt.unytbankapp.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/user")
@@ -19,5 +17,15 @@ public class UserController {
     @PostMapping("/createAccount")
     private BankResponse createAccount(@RequestBody UserRequest userRequest) {
         return userService.createAccount(userRequest);
+    }
+
+    @GetMapping("/balanceEnquiry")
+    private BankResponse balanceEnquiry(@RequestBody EnquiryRequest request) {
+        return userService.balanceEnquiry(request);
+    }
+
+    @GetMapping("/nameEnquiry")
+    private String nameEnquiry(@RequestBody EnquiryRequest request) {
+        return userService.nameEnquiry(request);
     }
 }
