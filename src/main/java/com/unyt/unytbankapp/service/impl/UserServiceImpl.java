@@ -2,6 +2,7 @@ package com.unyt.unytbankapp.service.impl;
 
 import com.unyt.unytbankapp.dto.AccountInfo;
 import com.unyt.unytbankapp.dto.BankResponse;
+import com.unyt.unytbankapp.dto.EmailDetails;
 import com.unyt.unytbankapp.dto.UserRequest;
 import com.unyt.unytbankapp.entity.User;
 import com.unyt.unytbankapp.repository.UserRepository;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Override
     public BankResponse createAccount(UserRequest userRequest) {
@@ -41,9 +43,15 @@ public class UserServiceImpl implements UserService {
                 .alternativePhoneNumber(userRequest.getAlternativePhoneNumber())
                 .status("ACTIVE")
                 .build();
+        System.out.println("Wanna save");
 
         //saved the created user to the database
         User savedUser = userRepository.save(newUser);
+        System.out.println("I have saved user");
+
+        //Send email to the saved user
+        emailService.sendEmailAlert(emaildetails(savedUser));
+        System.out.println("I sent email");
         return accountCreationResponse(savedUser);
     }
 
@@ -60,6 +68,16 @@ public class UserServiceImpl implements UserService {
                 .accountBalance(savedUser.getAccountBalance())
                 .accountName(savedUser.getFirstName() + " " + savedUser.getLastName() + " " + savedUser.getOtherName())
                 .accountNumber(savedUser.getAccountNumber())
+                .build();
+    }
+
+    private EmailDetails emaildetails(User savedUser) {
+        return EmailDetails.builder()
+                .recipient(savedUser.getEmail())
+                .subject("ACCOUNT CREATION")
+                .messageBody("Congratulations! Your account has been successfully created.\nYour Account Details: \n" +
+                        "Account name: " + savedUser.getFirstName() + " " + savedUser.getLastName() + " " + savedUser.getOtherName() + "\n" +
+                        "Account number: " + savedUser.getAccountNumber())
                 .build();
     }
 }
