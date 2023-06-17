@@ -1,6 +1,7 @@
 package com.unyt.unytbankapp.controller;
 
 import com.unyt.unytbankapp.dto.BankResponse;
+import com.unyt.unytbankapp.dto.CreditDebitRequest;
 import com.unyt.unytbankapp.dto.EnquiryRequest;
 import com.unyt.unytbankapp.dto.UserRequest;
 import com.unyt.unytbankapp.service.impl.UserService;
@@ -27,5 +28,10 @@ public class UserController {
     @GetMapping("/nameEnquiry")
     private String nameEnquiry(@RequestBody EnquiryRequest request) {
         return userService.nameEnquiry(request);
+    }
+
+    @PostMapping("/credit")
+    private BankResponse creditAccount(@RequestBody CreditDebitRequest request) {
+        return userService.creditAccount(request);
     }
 }
