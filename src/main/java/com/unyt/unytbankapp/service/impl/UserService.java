@@ -1,9 +1,6 @@
 package com.unyt.unytbankapp.service.impl;
 
-import com.unyt.unytbankapp.dto.BankResponse;
-import com.unyt.unytbankapp.dto.CreditDebitRequest;
-import com.unyt.unytbankapp.dto.EnquiryRequest;
-import com.unyt.unytbankapp.dto.UserRequest;
+import com.unyt.unytbankapp.dto.*;
 
 public interface UserService {
 
@@ -12,4 +9,5 @@ public interface UserService {
     String nameEnquiry(EnquiryRequest request);
     BankResponse creditAccount(CreditDebitRequest request);
     BankResponse debitAccount(CreditDebitRequest request);
+    BankResponse transferFunds(TransferRequest request);
 }

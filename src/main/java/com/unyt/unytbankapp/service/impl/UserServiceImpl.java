@@ -170,5 +170,116 @@ public class UserServiceImpl implements UserService {
 
     }
 
+//    @Override
+//    public BankResponse transfer(TransferRequest request) {
+//        //Check if destination and owned account exist
+//        //Debit from owned account and credit the other account
+//        boolean isOwnAccountExist = userRepository.existsByEmail(request.getOwnAccountNumber());
+//        if(!isOwnAccountExist) {
+//            return BankResponse.builder()
+//                    .responseMessage(AccountUtils.ACCOUNT_NOT_EXIST_MESSAGE)
+//                    .responseCode(AccountUtils.ACCOUNT_NOT_EXIST_CODE)
+//                    .accountInfo(Optional.empty())
+//                    .build();
+//        }
+//        User ownerAccountToDebit = userRepository.findByAccountNumber(request.getOwnAccountNumber());
+//        BigInteger ownerAvailableBalance = ownerAccountToDebit.getAccountBalance().toBigInteger();
+//        BigInteger amountToDebit = request.getAmount().toBigInteger();
+//        if(ownerAvailableBalance.intValue() < amountToDebit.intValue()) {
+//            return BankResponse.builder()
+//                    .responseCode(AccountUtils.INSUFFICIENT_BALANCE_CODE)
+//                    .responseMessage(AccountUtils.INSUFFICIENT_BALANCE_MESSAGE)
+//                    .accountInfo(Optional.ofNullable(AccountInfo.builder()
+//                            .accountName(ownerAccountToDebit.getFirstName() + " " + ownerAccountToDebit.getLastName() + " " + ownerAccountToDebit.getOtherName())
+//                            .accountNumber(ownerAccountToDebit.getAccountNumber())
+//                            .accountBalance(ownerAccountToDebit.getAccountBalance())
+//                            .build()))
+//                    .build();
+//        } else {
+//        boolean isRecipientAccountExist = userRepository.existsByEmail(request.getRecipientAccountNumber());
+//            ownerAccountToDebit.setAccountBalance(ownerAccountToDebit.getAccountBalance().subtract(request.getAmount()));
+//            userRepository.save(ownerAccountToDebit);
+//            if(!isRecipientAccountExist) {
+//                return BankResponse.builder()
+//                        .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
+//                        .responseMessage(AccountUtils.ACCOUNT_DEBITED_MESSAGE)
+//                        .accountInfo(Optional.ofNullable(AccountInfo.builder()
+//                                .accountName(ownerAccountToDebit.getFirstName() + " " + ownerAccountToDebit.getLastName() + " " + ownerAccountToDebit.getOtherName())
+//                                .accountNumber(ownerAccountToDebit.getAccountNumber())
+//                                .accountBalance(ownerAccountToDebit.getAccountBalance())
+//                                .build()))
+//                        .build();
+//            }
+//            User recipientAccount = userRepository.findByAccountNumber(request.getRecipientAccountNumber());
+//            recipientAccount.setAccountBalance(recipientAccount.getAccountBalance().add(request.getAmount()));
+//            userRepository.save(recipientAccount);
+//            return BankResponse.builder()
+//                    .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
+//                    .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESS)
+//                    .accountInfo(Optional.ofNullable(AccountInfo.builder()
+//                            .accountName(recipientAccount.getFirstName() + " " + recipientAccount.getLastName() + " " + recipientAccount.getOtherName())
+//                            .accountBalance(recipientAccount.getAccountBalance())
+//                            .accountNumber(request.getRecipientAccountNumber())
+//                            .build()))
+//                    .build();
+//        }
+//    }
+    @Override
+    public BankResponse transferFunds(TransferRequest request) {
+        // Check if the source account exists
+        boolean isSourceAccountExist = userRepository.existsByAccountNumber(request.getSourceAccountNumber());
+        if (!isSourceAccountExist) {
+            return BankResponse.builder()
+                    .responseMessage(AccountUtils.ACCOUNT_NOT_EXIST_MESSAGE)
+                    .responseCode(AccountUtils.ACCOUNT_NOT_EXIST_CODE)
+                    .accountInfo(Optional.empty())
+                    .build();
+        }
+
+        // Check if the destination account exists
+        boolean isDestinationAccountExist = userRepository.existsByAccountNumber(request.getDestinationAccountNumber());
+        if (!isDestinationAccountExist) {
+            return BankResponse.builder()
+                    .responseMessage(AccountUtils.ACCOUNT_NOT_EXIST_MESSAGE)
+                    .responseCode(AccountUtils.ACCOUNT_NOT_EXIST_CODE)
+                    .accountInfo(Optional.empty())
+                    .build();
+        }
+
+        // Retrieve the source user account
+        User sourceUser = userRepository.findByAccountNumber(request.getSourceAccountNumber());
+
+        // Check if the source account has sufficient balance
+        BigDecimal availableBalance = sourceUser.getAccountBalance();
+        BigDecimal transferAmount = request.getAmount();
+        if (availableBalance.compareTo(transferAmount) < 0) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.INSUFFICIENT_BALANCE_CODE)
+                    .responseMessage(AccountUtils.INSUFFICIENT_BALANCE_MESSAGE)
+                    .accountInfo(Optional.empty())
+                    .build();
+        }
+
+        // Perform the debit operation from the source account
+        sourceUser.setAccountBalance(availableBalance.subtract(transferAmount));
+        userRepository.save(sourceUser);
+
+        // Retrieve the destination user account
+        User destinationUser = userRepository.findByAccountNumber(request.getDestinationAccountNumber());
+        destinationUser.setAccountBalance(destinationUser.getAccountBalance().add(transferAmount));
+        userRepository.save(destinationUser);
+
+        return BankResponse.builder()
+                .responseCode(AccountUtils.TRANSFER_SUCCESS_CODE)
+                .responseMessage(AccountUtils.TRANSFER_SUCCESS_MESSAGE)
+                .accountInfo(Optional.ofNullable(AccountInfo.builder()
+                        .accountName(sourceUser.getFirstName() + " " + sourceUser.getLastName() + " " + sourceUser.getOtherName())
+                        .accountNumber(sourceUser.getAccountNumber())
+                        .accountName(destinationUser.getFirstName() + " " + destinationUser.getLastName() + " " + destinationUser.getOtherName())
+                        .accountNumber(destinationUser.getAccountNumber())
+                        .accountBalance(destinationUser.getAccountBalance())
+                        .build()))
+                .build();
+    }
 
 }

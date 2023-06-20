@@ -1,9 +1,6 @@
 package com.unyt.unytbankapp.controller;
 
-import com.unyt.unytbankapp.dto.BankResponse;
-import com.unyt.unytbankapp.dto.CreditDebitRequest;
-import com.unyt.unytbankapp.dto.EnquiryRequest;
-import com.unyt.unytbankapp.dto.UserRequest;
+import com.unyt.unytbankapp.dto.*;
 import com.unyt.unytbankapp.service.impl.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -38,5 +35,10 @@ public class UserController {
     @PostMapping("/debit")
     private BankResponse debitAccount(@RequestBody CreditDebitRequest request) {
         return userService.debitAccount(request);
+    }
+
+    @PostMapping("/transfer")
+    private BankResponse transfer(@RequestBody TransferRequest request) {
+        return userService.transferFunds(request);
     }
 }
