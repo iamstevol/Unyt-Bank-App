@@ -17,6 +17,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final TransactionService transactionService;
 
     @Override
     public BankResponse createAccount(UserRequest userRequest) {
@@ -123,6 +124,14 @@ public class UserServiceImpl implements UserService {
         userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(request.getAmount()));
         userRepository.save(userToCredit);
 
+        //Save this transaction
+        TransactionDto transactionDto = TransactionDto.builder()
+                .transactionType("CREDIT")
+                .amount(request.getAmount())
+                .accountNumber(userToCredit.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionDto);
+
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESS)
@@ -158,6 +167,15 @@ public class UserServiceImpl implements UserService {
         }
         userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(request.getAmount()));
         userRepository.save(userToDebit);
+
+        //Save this transaction
+        TransactionDto transactionDto = TransactionDto.builder()
+                .transactionType("DEBIT")
+                .amount(request.getAmount())
+                .accountNumber(userToDebit.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionDto);
+
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_DEBITED_MESSAGE)
@@ -170,60 +188,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-//    @Override
-//    public BankResponse transfer(TransferRequest request) {
-//        //Check if destination and owned account exist
-//        //Debit from owned account and credit the other account
-//        boolean isOwnAccountExist = userRepository.existsByEmail(request.getOwnAccountNumber());
-//        if(!isOwnAccountExist) {
-//            return BankResponse.builder()
-//                    .responseMessage(AccountUtils.ACCOUNT_NOT_EXIST_MESSAGE)
-//                    .responseCode(AccountUtils.ACCOUNT_NOT_EXIST_CODE)
-//                    .accountInfo(Optional.empty())
-//                    .build();
-//        }
-//        User ownerAccountToDebit = userRepository.findByAccountNumber(request.getOwnAccountNumber());
-//        BigInteger ownerAvailableBalance = ownerAccountToDebit.getAccountBalance().toBigInteger();
-//        BigInteger amountToDebit = request.getAmount().toBigInteger();
-//        if(ownerAvailableBalance.intValue() < amountToDebit.intValue()) {
-//            return BankResponse.builder()
-//                    .responseCode(AccountUtils.INSUFFICIENT_BALANCE_CODE)
-//                    .responseMessage(AccountUtils.INSUFFICIENT_BALANCE_MESSAGE)
-//                    .accountInfo(Optional.ofNullable(AccountInfo.builder()
-//                            .accountName(ownerAccountToDebit.getFirstName() + " " + ownerAccountToDebit.getLastName() + " " + ownerAccountToDebit.getOtherName())
-//                            .accountNumber(ownerAccountToDebit.getAccountNumber())
-//                            .accountBalance(ownerAccountToDebit.getAccountBalance())
-//                            .build()))
-//                    .build();
-//        } else {
-//        boolean isRecipientAccountExist = userRepository.existsByEmail(request.getRecipientAccountNumber());
-//            ownerAccountToDebit.setAccountBalance(ownerAccountToDebit.getAccountBalance().subtract(request.getAmount()));
-//            userRepository.save(ownerAccountToDebit);
-//            if(!isRecipientAccountExist) {
-//                return BankResponse.builder()
-//                        .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
-//                        .responseMessage(AccountUtils.ACCOUNT_DEBITED_MESSAGE)
-//                        .accountInfo(Optional.ofNullable(AccountInfo.builder()
-//                                .accountName(ownerAccountToDebit.getFirstName() + " " + ownerAccountToDebit.getLastName() + " " + ownerAccountToDebit.getOtherName())
-//                                .accountNumber(ownerAccountToDebit.getAccountNumber())
-//                                .accountBalance(ownerAccountToDebit.getAccountBalance())
-//                                .build()))
-//                        .build();
-//            }
-//            User recipientAccount = userRepository.findByAccountNumber(request.getRecipientAccountNumber());
-//            recipientAccount.setAccountBalance(recipientAccount.getAccountBalance().add(request.getAmount()));
-//            userRepository.save(recipientAccount);
-//            return BankResponse.builder()
-//                    .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
-//                    .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESS)
-//                    .accountInfo(Optional.ofNullable(AccountInfo.builder()
-//                            .accountName(recipientAccount.getFirstName() + " " + recipientAccount.getLastName() + " " + recipientAccount.getOtherName())
-//                            .accountBalance(recipientAccount.getAccountBalance())
-//                            .accountNumber(request.getRecipientAccountNumber())
-//                            .build()))
-//                    .build();
-//        }
-//    }
     @Override
     public BankResponse transferFunds(TransferRequest request) {
         // Check if the source account exists
@@ -268,6 +232,14 @@ public class UserServiceImpl implements UserService {
         User destinationUser = userRepository.findByAccountNumber(request.getDestinationAccountNumber());
         destinationUser.setAccountBalance(destinationUser.getAccountBalance().add(transferAmount));
         userRepository.save(destinationUser);
+
+        //Save this transaction
+        TransactionDto transactionDto = TransactionDto.builder()
+                .transactionType("CREDIT")
+                .amount(request.getAmount())
+                .accountNumber(destinationUser.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionDto);
 
         return BankResponse.builder()
                 .responseCode(AccountUtils.TRANSFER_SUCCESS_CODE)

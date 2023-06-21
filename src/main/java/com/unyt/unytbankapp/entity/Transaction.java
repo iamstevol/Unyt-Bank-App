@@ -21,4 +21,5 @@ public class Transaction {
     private String transactionType;
     private BigDecimal amount;
     private String accountNumber;
+    private String status;
 }
